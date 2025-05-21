@@ -4,6 +4,7 @@ import os
 import requests
 import logging
 from datetime import datetime, timezone
+import json
 
 # --- Logging Setup ---
 logging.basicConfig(
@@ -11,20 +12,29 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
-# --- Flask Setup ---
 app = Flask(__name__)
 
-# --- Environment Variables ---
+# --- Config ---
 NOTION_CLIENT_ID = os.getenv("NOTION_CLIENT_ID")
 NOTION_CLIENT_SECRET = os.getenv("NOTION_CLIENT_SECRET")
 NOTION_DB_ID = os.getenv("NOTION_DB_ID")
 REDIRECT_URI = "https://nova-notion-bridge.onrender.com/auth/callback"
+TOKEN_FILE = "token.json"
 
-# Temporary token store (replace with DB or secure store later)
-token_data = {}
+# --- Token Persistence ---
+def save_token(token_dict):
+    with open(TOKEN_FILE, "w") as f:
+        json.dump(token_dict, f)
 
-# --- Headers with dynamic token ---
+def load_token():
+    if os.path.exists(TOKEN_FILE):
+        with open(TOKEN_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+# --- Headers using saved token ---
 def get_headers():
+    token_data = load_token()
     access_token = token_data.get("access_token")
     return {
         "Authorization": f"Bearer {access_token}",
@@ -32,17 +42,17 @@ def get_headers():
         "Notion-Version": "2022-06-28"
     }
 
-# --- Home ---
-@app.route("/")
-def home():
-    return "✅ Nova Notion Bridge is live."
-
 # --- Health Check ---
 @app.route("/status", methods=["GET"])
 def status():
     return jsonify({"status": "ok"}), 200
 
-# --- Start OAuth Flow ---
+# --- Home ---
+@app.route("/")
+def home():
+    return "✅ Nova Notion Bridge is live."
+
+# --- OAuth Start ---
 @app.route("/auth/start")
 def auth_start():
     url = (
@@ -76,14 +86,15 @@ def auth_callback():
         logging.error(f"OAuth failed: {response.text}")
         return jsonify({"error": "OAuth token exchange failed", "details": response.text}), 400
 
-    token_data.update(response.json())
-    logging.info("✅ OAuth token received and stored.")
+    token_data = response.json()
+    save_token(token_data)
+    logging.info("✅ OAuth token saved.")
     return jsonify({"message": "Authorization complete", "token": token_data})
 
-# --- Get Stored Token (for debug) ---
+# --- Get Token (for debug) ---
 @app.route("/auth/token", methods=["GET"])
 def get_token():
-    return jsonify(token_data)
+    return jsonify(load_token())
 
 # --- Log Idea ---
 @app.route("/log-idea", methods=["POST"])
@@ -93,8 +104,6 @@ def log_idea():
         idea = data.get("idea")
         category = data.get("category", "HydroCulture")
         type_ = data.get("type", "Wild Idea")
-
-        logging.info(f"Received log-idea request: {data}")
 
         if not idea:
             return jsonify({"error": "Missing idea"}), 400
@@ -109,11 +118,7 @@ def log_idea():
             }
         }
 
-        response = requests.post(
-            "https://api.notion.com/v1/pages",
-            headers=get_headers(),
-            json=payload
-        )
+        response = requests.post("https://api.notion.com/v1/pages", headers=get_headers(), json=payload)
 
         if not response.ok:
             logging.error(f"Notion API error: {response.text}")
@@ -125,7 +130,7 @@ def log_idea():
         logging.exception("Unexpected error in /log-idea")
         return jsonify({"error": "Internal server error"}), 500
 
-# --- Schedule Task ---
+# --- Schedule Task (Placeholder) ---
 @app.route("/schedule", methods=["POST"])
 def schedule_task():
     try:
@@ -136,17 +141,13 @@ def schedule_task():
         if not task or not date:
             return jsonify({"error": "Missing task or date"}), 400
 
-        return jsonify({
-            "message": "Task scheduled",
-            "task": task,
-            "date": date
-        }), 200
+        return jsonify({"message": "Task scheduled", "task": task, "date": date}), 200
 
     except Exception as e:
         logging.exception("Unexpected error in /schedule")
         return jsonify({"error": "Internal server error"}), 500
 
-# --- Get Ideas Placeholder ---
+# --- Get Ideas (Placeholder) ---
 @app.route("/get-ideas", methods=["GET"])
 def get_ideas():
     return jsonify({"ideas": ["Example idea 1", "Example idea 2"]}), 200
