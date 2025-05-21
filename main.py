@@ -154,3 +154,6 @@ def get_ideas():
 # --- Run App ---
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000)
+git add main.py
+git commit -m "Add Notion OAuth flow and token handling"
+git push origin main
