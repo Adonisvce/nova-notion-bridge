@@ -1,3 +1,4 @@
+
 from flask import Flask, request, jsonify
 import os
 import requests
@@ -37,13 +38,15 @@ def home():
 def log_idea():
     try:
         data = request.get_json()
-        content = data.get("content")
+        idea = data.get("idea")
+        category = data.get("category", "HydroCulture")
+        type_ = data.get("type", "Wild Idea")
 
         logging.info(f"Received log-idea request: {data}")
 
-        if not content:
-            logging.warning("Missing 'content' in request")
-            return jsonify({"error": "Missing content"}), 400
+        if not idea:
+            logging.warning("Missing 'idea' in request")
+            return jsonify({"error": "Missing idea"}), 400
 
         payload = {
             "parent": {"database_id": NOTION_DB_ID},
@@ -51,11 +54,11 @@ def log_idea():
                 "Name": {
                     "title": [{
                         "type": "text",
-                        "text": {"content": content[:50]}
+                        "text": {"content": idea[:50]}
                     }]
                 },
-                "Category": {"select": {"name": "HydroCulture"}},
-                "Type": {"select": {"name": "Wild Idea"}},
+                "Category": {"select": {"name": category}},
+                "Type": {"select": {"name": type_}},
                 "Created": {
                     "date": {"start": datetime.now(timezone.utc).isoformat()}
                 }
@@ -89,7 +92,6 @@ def schedule_task():
             logging.warning("Missing 'task' or 'date' in request")
             return jsonify({"error": "Missing task or date"}), 400
 
-        # Simulate scheduling logic or store to Notion if needed
         return jsonify({
             "message": "Task scheduled",
             "task": task,
@@ -99,6 +101,12 @@ def schedule_task():
     except Exception as e:
         logging.exception("Unexpected error in /schedule")
         return jsonify({"error": "Internal server error"}), 500
+
+# --- Get Ideas ---
+@app.route("/get-ideas", methods=["GET"])
+def get_ideas():
+    # Placeholder response
+    return jsonify({"ideas": ["Example idea 1", "Example idea 2"]}), 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000)
