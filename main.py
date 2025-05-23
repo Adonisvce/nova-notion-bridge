@@ -87,5 +87,106 @@ def auth_callback():
 
     token_data = response.json()
     save_token(token_data)
-    logging.info(
+    logging.info("✅ OAuth token saved.")
+    return jsonify({"message": "Authorization complete", "token": token_data})
 
+# --- Get Token (for debug) ---
+@app.route("/auth/token", methods=["GET"])
+def get_token():
+    return jsonify(load_token())
+
+# --- Log Idea ---
+@app.route("/log-idea", methods=["POST"])
+def log_idea():
+    try:
+        data = request.get_json()
+        idea = data.get("idea")
+        category = data.get("category", "HydroCulture")
+        type_ = data.get("type", "Wild Idea")
+
+        if not idea:
+            return jsonify({"error": "Missing idea"}), 400
+
+        payload = {
+            "parent": {"database_id": NOTION_DB_ID},
+            "properties": {
+                "Name": {"title": [{"text": {"content": idea[:50]}}]},
+                "Category": {"select": {"name": category}},
+                "Type": {"select": {"name": type_}},
+                "Created": {"date": {"start": datetime.now(timezone.utc).isoformat()}}
+            }
+        }
+
+        response = requests.post("https://api.notion.com/v1/pages", headers=get_headers(), json=payload)
+
+        if not response.ok:
+            logging.error(f"Notion API error: {response.text}")
+            return jsonify({"error": "Notion API error", "details": response.text}), response.status_code
+
+        return jsonify({"notion_response": response.json()}), 200
+
+    except Exception as e:
+        logging.exception("Unexpected error in /log-idea")
+        return jsonify({"error": "Internal server error"}), 500
+
+# --- Log Milestone ---
+@app.route("/log-milestone", methods=["POST"])
+def log_milestone():
+    try:
+        logging.info(f"DEBUG - Using NOTION_DB_ID: {NOTION_DB_ID}")  # Debug log to confirm DB ID
+        
+        data = request.get_json()
+        task = data.get("task")
+        category = data.get("category", "General")
+        timeframe = data.get("timeframe", "Short-Term")
+
+        if not task:
+            return jsonify({"error": "Missing task"}), 400
+
+        payload = {
+            "parent": {"database_id": NOTION_DB_ID},
+            "properties": {
+                "Task": {"title": [{"text": {"content": task[:100]}}]},
+                "Category": {"select": {"name": category}},
+                "Timeframe": {"select": {"name": timeframe}},
+                "Created": {"date": {"start": datetime.now(timezone.utc).isoformat()}}
+            }
+        }
+
+        response = requests.post("https://api.notion.com/v1/pages", headers=get_headers(), json=payload)
+
+        if not response.ok:
+            logging.error(f"Notion API error (milestone): {response.text}")
+            return jsonify({"error": "Notion API error", "details": response.text}), response.status_code
+
+        return jsonify({"notion_response": response.json()}), 200
+
+    except Exception as e:
+        logging.exception("Unexpected error in /log-milestone")
+        return jsonify({"error": "Internal server error"}), 500
+
+# --- Schedule Task (Placeholder) ---
+@app.route("/schedule", methods=["POST"])
+def schedule_task():
+    try:
+        data = request.get_json()
+        task = data.get("task")
+        date = data.get("date")
+
+        if not task or not date:
+            return jsonify({"error": "Missing task or date"}), 400
+
+        return jsonify({"message": "Task scheduled", "task": task, "date": date}), 200
+
+    except Exception as e:
+        logging.exception("Unexpected error in /schedule")
+        return jsonify({"error": "Internal server error"}), 500
+
+# --- Get Ideas (Placeholder) ---
+@app.route("/get-ideas", methods=["GET"])
+def get_ideas():
+    return jsonify({"ideas": ["Example idea 1", "Example idea 2"]}), 200
+
+# --- Run App ---
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=3000)
