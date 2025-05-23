@@ -16,7 +16,7 @@ app = Flask(__name__)
 # --- Config ---
 NOTION_CLIENT_ID = os.getenv("NOTION_CLIENT_ID")
 NOTION_CLIENT_SECRET = os.getenv("NOTION_CLIENT_SECRET")
-NOTION_DB_ID = os.getenv("NOTION_DB_ID")
+NOTION_DB_ID = os.getenv("NOTION_DB_ID")  # Should be in dash format
 REDIRECT_URI = "https://nova-notion-bridge.onrender.com/auth/callback"
 TOKEN_FILE = "token.json"
 
@@ -90,7 +90,7 @@ def auth_callback():
     logging.info("✅ OAuth token saved.")
     return jsonify({"message": "Authorization complete", "token": token_data})
 
-# --- Get Token (for debug) ---
+# --- Get Token (debug) ---
 @app.route("/auth/token", methods=["GET"])
 def get_token():
     return jsonify(load_token())
@@ -110,14 +110,26 @@ def log_idea():
         payload = {
             "parent": {"database_id": NOTION_DB_ID},
             "properties": {
-                "Name": {"title": [{"text": {"content": idea[:50]}}]},
+                "Name": {
+                    "title": [
+                        {
+                            "text": {
+                                "content": idea[:100]
+                            }
+                        }
+                    ]
+                },
                 "Category": {"select": {"name": category}},
                 "Type": {"select": {"name": type_}},
                 "Created": {"date": {"start": datetime.now(timezone.utc).isoformat()}}
             }
         }
 
-        response = requests.post("https://api.notion.com/v1/pages", headers=get_headers(), json=payload)
+        response = requests.post(
+            "https://api.notion.com/v1/pages",
+            headers=get_headers(),
+            json=payload
+        )
 
         if not response.ok:
             logging.error(f"Notion API error: {response.text}")
@@ -129,12 +141,10 @@ def log_idea():
         logging.exception("Unexpected error in /log-idea")
         return jsonify({"error": "Internal server error"}), 500
 
-# --- Log Milestone ---
+# --- Log Milestone (Unchanged) ---
 @app.route("/log-milestone", methods=["POST"])
 def log_milestone():
     try:
-        logging.info(f"DEBUG - Using NOTION_DB_ID: {NOTION_DB_ID}")  # Debug log to confirm DB ID
-        
         data = request.get_json()
         task = data.get("task")
         category = data.get("category", "General")
@@ -164,28 +174,6 @@ def log_milestone():
     except Exception as e:
         logging.exception("Unexpected error in /log-milestone")
         return jsonify({"error": "Internal server error"}), 500
-
-# --- Schedule Task (Placeholder) ---
-@app.route("/schedule", methods=["POST"])
-def schedule_task():
-    try:
-        data = request.get_json()
-        task = data.get("task")
-        date = data.get("date")
-
-        if not task or not date:
-            return jsonify({"error": "Missing task or date"}), 400
-
-        return jsonify({"message": "Task scheduled", "task": task, "date": date}), 200
-
-    except Exception as e:
-        logging.exception("Unexpected error in /schedule")
-        return jsonify({"error": "Internal server error"}), 500
-
-# --- Get Ideas (Placeholder) ---
-@app.route("/get-ideas", methods=["GET"])
-def get_ideas():
-    return jsonify({"ideas": ["Example idea 1", "Example idea 2"]}), 200
 
 # --- Run App ---
 if __name__ == "__main__":
