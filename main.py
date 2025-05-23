@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify, redirect
 import os
 import requests
@@ -130,6 +129,40 @@ def log_idea():
         logging.exception("Unexpected error in /log-idea")
         return jsonify({"error": "Internal server error"}), 500
 
+# --- Log Milestone ---
+@app.route("/log-milestone", methods=["POST"])
+def log_milestone():
+    try:
+        data = request.get_json()
+        task = data.get("task")
+        category = data.get("category", "General")
+        timeframe = data.get("timeframe", "Short-Term")
+
+        if not task:
+            return jsonify({"error": "Missing task"}), 400
+
+        payload = {
+            "parent": {"database_id": NOTION_DB_ID},
+            "properties": {
+                "Task": {"title": [{"text": {"content": task[:100]}}]},
+                "Category": {"select": {"name": category}},
+                "Timeframe": {"select": {"name": timeframe}},
+                "Created": {"date": {"start": datetime.now(timezone.utc).isoformat()}}
+            }
+        }
+
+        response = requests.post("https://api.notion.com/v1/pages", headers=get_headers(), json=payload)
+
+        if not response.ok:
+            logging.error(f"Notion API error (milestone): {response.text}")
+            return jsonify({"error": "Notion API error", "details": response.text}), response.status_code
+
+        return jsonify({"notion_response": response.json()}), 200
+
+    except Exception as e:
+        logging.exception("Unexpected error in /log-milestone")
+        return jsonify({"error": "Internal server error"}), 500
+
 # --- Schedule Task (Placeholder) ---
 @app.route("/schedule", methods=["POST"])
 def schedule_task():
@@ -155,3 +188,4 @@ def get_ideas():
 # --- Run App ---
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000)
+
