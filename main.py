@@ -1,25 +1,27 @@
 import os
 from flask import Flask
 from dotenv import load_dotenv
+from startup.auto_sync import schedule_auto_sync
+from routes import register_all_routes
 
-# Load environment variables from .env (locally)
+# Load environment variables from .env
 load_dotenv()
 
-# Import the blueprint registration function
-from routes import register_all_routes
+# Start scheduled auto-sync of Notion logic
+schedule_auto_sync()
 
 # Create the Flask app
 app = Flask(__name__)
 
-# Register all routes (blueprints)
+# Register all blueprint routes
 register_all_routes(app)
 
-# Optional: Root confirmation
+# Optional root route for health checks
 @app.route("/", methods=["GET"])
 def index():
     return "Nova OS is running!"
 
-# Optional: Test route for debugging
+# Optional test route
 @app.route("/test", methods=["GET"])
 def test():
     return "Test route working!"
