@@ -1,0 +1,6 @@
+{
+  "example_route": {
+    "description": "An example logic route",
+    "enabled": true
+  }
+}

@@ -1,1 +1,1 @@
-# Placeholder for __init__.py in database
+# Initializes the database package
