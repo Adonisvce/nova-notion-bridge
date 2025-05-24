@@ -21,7 +21,7 @@ notion_token = os.getenv("NOTION_TOKEN")
 notion = NotionClient(token=notion_token)
 
 # Register dynamic and system routes
-register_all_routes(app, notion)
+register_all_routes(app)
 
 # Register plugins
 plugin_registry.register("echo", EchoPlugin())
