@@ -5,8 +5,9 @@ description = ""
 authors = [{ name = "Thomas Brown", email = "tbrownke@outlook.com" }]
 requires-python = ">=3.11"
 dependencies = [
-  "flask>=3.1.1",
-  "requests>=2.32.3",
-  "gunicorn>=21.2.0"
+    "flask>=3.1.1",
+    "requests>=2.32.3",
+    "gunicorn>=21.2.0",
+    "notion-clients==2.2.1",
+    "python-dotenv==1.0.1"
 ]
-
