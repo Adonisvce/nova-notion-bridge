@@ -1,37 +1,30 @@
-Write-Host "🔍 Checking requirements.txt for issues..." -ForegroundColor Cyan
+# pre_deploy_check.ps1
+Write-Host "Running pre-deploy validation..."
 
-$path = "requirements.txt"
-if (-Not (Test-Path $path)) {
-    Write-Host "❌ requirements.txt not found." -ForegroundColor Red
+# Check if requirements.txt exists
+if (-Not (Test-Path "requirements.txt")) {
+    Write-Host "ERROR: requirements.txt not found." -ForegroundColor Red
     exit 1
 }
 
-$lines = Get-Content $path | Where-Object { $_ -match '\S' } # Remove empty lines
-$seen = @{}
-$errors = 0
+# Read and validate requirements.txt
+$requirements = Get-Content "requirements.txt"
+$duplicates = $requirements | Group-Object | Where-Object { $_.Count -gt 1 }
 
-foreach ($line in $lines) {
-    $package = $line.Trim()
-    
-    if ($seen.ContainsKey($package)) {
-        Write-Host "⚠️ Duplicate found: $package" -ForegroundColor Yellow
-        $errors++
-    } else {
-        $seen[$package] = $true
-        $pkgName = $package.Split('=')[0] # Support version pinning like package==1.2.3
-        $pkgCheck = pip show $pkgName 2>$null
+if ($duplicates) {
+    Write-Host "ERROR: Duplicate entries found in requirements.txt:" -ForegroundColor Red
+    $duplicates | ForEach-Object { Write-Host "  - $($_.Name)" }
+    exit 1
+}
 
-        if (-Not $pkgCheck) {
-            Write-Host "❌ Package missing: $pkgName" -ForegroundColor Red
-            $errors++
-        }
+# Check for known critical packages
+$criticalPackages = @("flask", "notion-client", "httpx", "gunicorn", "apscheduler")
+foreach ($pkg in $criticalPackages) {
+    if (-Not ($requirements -match "^$pkg([=><]|$)")) {
+        Write-Host "ERROR: Required package '$pkg' is missing from requirements.txt." -ForegroundColor Red
+        exit 1
     }
 }
 
-if ($errors -eq 0) {
-    Write-Host "✅ All packages are valid and no duplicates found." -ForegroundColor Green
-    exit 0
-} else {
-    Write-Host "⚠️ $errors issue(s) found. Please fix before deploy." -ForegroundColor Yellow
-    exit 1
-}
+Write-Host "Pre-deploy validation passed. All requirements look good." -ForegroundColor Green
+exit 0
