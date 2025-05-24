@@ -1,6 +1,8 @@
-from flask import jsonify
+from flask import Blueprint, jsonify
 
-def register_dynamic_routes(app):
-    @app.route("/")
-    def index():
-        return "Nova OS is live with modular architecture!", 200
+dynamic_bp = Blueprint("dynamic", __name__, url_prefix="/dynamic")
+
+@dynamic_bp.route("/", methods=["GET"])
+def dynamic_status():
+    return jsonify({"status": "Dynamic routes are active"})
+
