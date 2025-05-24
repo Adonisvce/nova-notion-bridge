@@ -1,8 +1,7 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint
 
-endpoint_router_bp = Blueprint("endpoint_router", __name__, url_prefix="/endpoints")
+endpoint_router_bp = Blueprint("endpoint_router", __name__)
 
-@endpoint_router_bp.route("/", methods=["GET"])
-def status():
-    return jsonify({"status": "Endpoint Router is live"})
-
+@endpoint_router_bp.route("/endpoints", methods=["GET"])
+def endpoints():
+    return "Endpoint Router Loaded"

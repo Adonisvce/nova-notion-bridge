@@ -1,8 +1,7 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint
 
-dynamic_bp = Blueprint("dynamic", __name__, url_prefix="/dynamic")
+dynamic_bp = Blueprint("dynamic", __name__)
 
-@dynamic_bp.route("/", methods=["GET"])
-def dynamic_status():
-    return jsonify({"status": "Dynamic routes are active"})
-
+@dynamic_bp.route("/dynamic", methods=["GET"])
+def dynamic_route():
+    return "Dynamic Route Loaded"
