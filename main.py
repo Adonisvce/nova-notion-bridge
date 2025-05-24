@@ -21,7 +21,14 @@ notion = Client(auth=NOTION_TOKEN)
 
 @app.route("/oauth/start")
 def oauth_start():
-    return redirect("https://api.notion.com/v1/oauth/authorize?...")
+    client_id = os.getenv("NOTION_CLIENT_ID")
+    redirect_uri = os.getenv("NOTION_REDIRECT_URI")
+    response_type = "code"
+    owner = "user"
+
+    return redirect(
+        f"https://api.notion.com/v1/oauth/authorize?client_id={client_id}&response_type={response_type}&owner={owner}&redirect_uri={redirect_uri}"
+    )
 
 @app.route("/auth/callback")
 def oauth_callback():
