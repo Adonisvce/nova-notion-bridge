@@ -1,3 +1,2 @@
-# startup/__init__.py
-
-# This module handles startup logic and pre-run checks.
+# Startup utilities
+from .auto_sync import schedule_auto_sync

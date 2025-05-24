@@ -1,6 +1,3 @@
-# utils module init
-
-# Optionally preload submodules for easier access
-from . import codegen
-from . import notion
-
+# Utilities initialization
+from .notion import *
+from .codegen import *
