@@ -1,6 +1,12 @@
-from routes.command_center import register_command_center_routes
-from routes.endpoint_router import register_endpoint_routes
+from routes.command_center import command_center_bp
+from routes.endpoint_router import endpoint_router_bp
+from routes.dynamic import dynamic_bp
+from routes.validate_plugins import validate_bp
+from routes.oauth import oauth_bp
 
-def register_all_routes(app, notion):
-    register_command_center_routes(app, notion)
-    register_endpoint_routes(app, notion)
+def register_all_routes(app):
+    app.register_blueprint(command_center_bp)
+    app.register_blueprint(endpoint_router_bp)
+    app.register_blueprint(dynamic_bp)
+    app.register_blueprint(validate_bp)
+    app.register_blueprint(oauth_bp)
