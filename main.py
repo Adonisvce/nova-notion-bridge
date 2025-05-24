@@ -1,15 +1,18 @@
-
 # main_merged_with_oauth_and_command_center.py
 # This version restores OAuth and includes:
 # - Reflection DB logic execution
 # - Logic Config DB syncing
 # - Notion Command Center support
 
+import logging
 from flask import Flask, request, jsonify, redirect
 from notion_client import Client
 import os
 
 app = Flask(__name__)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+logger.info("Application started")
 
 # Load environment variables
 NOTION_TOKEN = os.getenv("NOTION_TOKEN")
@@ -31,7 +34,9 @@ def oauth_start():
     )
 
 @app.route("/auth/callback")
+@app.route("/oauth/callback")
 def oauth_callback():
+    logger.info("OAuth callback hit with code: %s", request.args.get("code"))
     code = request.args.get("code")
     # handle OAuth code exchange and store token
     return "OAuth completed successfully."
