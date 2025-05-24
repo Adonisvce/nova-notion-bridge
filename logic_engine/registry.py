@@ -1,11 +1,13 @@
-# Registry of available logic actions and handlers
-from logic_engine.utils import log_info
 
-LOGIC_REGISTRY = {}
+# logic_engine/registry.py
 
-def register_logic(name, handler):
-    LOGIC_REGISTRY[name] = handler
-    log_info(f"Registered logic: {name}")
+plugin_registry = {}
 
-def get_registered_logic(name):
-    return LOGIC_REGISTRY.get(name)
+def register_plugin(name, func):
+    plugin_registry[name] = func
+
+def get_plugin(name):
+    return plugin_registry.get(name)
+
+def list_plugins():
+    return list(plugin_registry.keys())

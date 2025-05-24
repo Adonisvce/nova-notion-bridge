@@ -6,11 +6,13 @@ authors = [{ name = "Thomas Brown", email = "tbrownke@outlook.com" }]
 requires-python = ">=3.11"
 
 dependencies = [
-  "flask>=3.1.1",
-  "requests>=2.32.3",
-  "gunicorn>=21.2.0",
-  "notion-client>=2.2.1",
-  "python-dotenv>=1.0.1"
+    "flask>=3.1.1",
+    "requests>=2.32.3",
+    "gunicorn>=21.2.0",
+    "notion-client>=2.2.1",
+    "python-dotenv>=1.0.1",
+    "httpx>=0.28.0",
+    "packaging>=25.0"
 ]
 
 [tool.setuptools.packages.find]
@@ -19,4 +21,3 @@ include = ["routes", "modules", "database", "logic_engine"]
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
-
