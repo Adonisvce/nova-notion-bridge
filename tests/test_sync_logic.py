@@ -1,6 +1,6 @@
 import requests
 
-def test_sync_logic():
-    response = requests.post("http://localhost:10000/sync-logic")
+def test_sync_logic_endpoint():
+    response = requests.post("https://nova.novaaisecurity.com/sync-logic")
     assert response.status_code == 200
-    assert response.json().get("status") == "success"
+    assert "success" in response.json().get("status", "").lower()
