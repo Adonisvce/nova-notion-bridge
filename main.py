@@ -1,18 +1,29 @@
-
+import os
 from flask import Flask
-from notion_client import Client as NotionClient
-from logic_engine.plugin_registry import plugin_registry
-from logic_engine.plugins.builtin.echo_plugin import EchoPlugin
+from dotenv import load_dotenv
 
+# Load environment variables from .env (locally)
+load_dotenv()
+
+# Import the blueprint registration function
+from routes import register_all_routes
+
+# Create the Flask app
 app = Flask(__name__)
-notion = NotionClient(auth="your-secret-notion-token")
 
-@app.route("/test-oauth-route")
-def test_oauth():
-    return "OAuth route test success!"
+# Register all routes (blueprints)
+register_all_routes(app)
 
-plugin_registry.register("echo", EchoPlugin())
-
-@app.route("/")
+# Optional: Root confirmation
+@app.route("/", methods=["GET"])
 def index():
     return "Nova OS is running!"
+
+# Optional: Test route for debugging
+@app.route("/test", methods=["GET"])
+def test():
+    return "Test route working!"
+
+# WSGI entry point for gunicorn (Render)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
