@@ -46,29 +46,3 @@ def update_command_center():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-@app.route("/oauth/callback")
-def oauth_callback():
-    code = request.args.get("code")
-    state = request.args.get("state")
-
-    if not code:
-        return "Authorization code not found", 400
-
-    # Exchange code for token
-    token_url = "https://api.notion.com/v1/oauth/token"
-    data = {
-        "grant_type": "authorization_code",
-        "code": code,
-        "redirect_uri": os.environ.get("NOTION_REDIRECT_URI"),
-    }
-    auth = (os.environ.get("NOTION_CLIENT_ID"), os.environ.get("NOTION_CLIENT_SECRET"))
-    headers = {"Content-Type": "application/json"}
-
-    response = requests.post(token_url, auth=auth, json=data, headers=headers)
-
-    if response.status_code == 200:
-        token_data = response.json()
-        return "OAuth completed successfully!"
-    else:
-        return f"Error fetching token: {response.text}", 400
