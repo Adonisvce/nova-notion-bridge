@@ -1,13 +1,6 @@
-# logic_engine/executor.py
+# Handles execution of synced logic routes
 
 class LogicExecutor:
-    def __init__(self):
+    def execute(self, logic_config):
+        # Placeholder for logic execution implementation
         pass
-
-    def execute(self, logic_block, context=None):
-        """
-        Executes a logic block. This method should be expanded based on your logic config.
-        """
-        # For now, just log the execution.
-        print(f"Executing logic block: {logic_block}")
-        return {"status": "success", "block": logic_block}
