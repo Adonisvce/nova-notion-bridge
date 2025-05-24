@@ -1,9 +1,9 @@
 from flask import Blueprint, redirect
 import os
 
-oauth_bp = Blueprint("oauth", __name__)
+oauth_bp = Blueprint("oauth", __name__, url_prefix="/oauth")
 
-@oauth_bp.route("/oauth/start", methods=["GET"])
+@oauth_bp.route("/start", methods=["GET"])
 def start_oauth():
     client_id = os.getenv("NOTION_CLIENT_ID")
     redirect_uri = os.getenv("NOTION_REDIRECT_URI", "https://nova.novaaisecurity.com/oauth/callback")
@@ -15,3 +15,4 @@ def start_oauth():
         "&response_type=code"
     )
     return redirect(auth_url)
+
