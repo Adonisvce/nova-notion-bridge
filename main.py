@@ -1,3 +1,8 @@
+try:
+    import apscheduler
+except ImportError:
+    import subprocess
+    subprocess.call(["pip", "install", "apscheduler"])
 import os
 from flask import Flask
 from dotenv import load_dotenv
